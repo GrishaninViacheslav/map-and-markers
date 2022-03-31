@@ -9,10 +9,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
+import io.github.grishaninvyacheslav.map_and_markers.ui.activity.BottomNavigationActivity
 
 abstract class BaseFragment<Binding : ViewBinding>(
     private val bindingFactory: (inflater: LayoutInflater, parent: ViewGroup?, attachToParent: Boolean) -> Binding
-) : Fragment() {
+) : Fragment(), BottomNavigationActivity.FabListener {
 
     private var _binding: Binding? = null
     protected val binding get() = _binding!!

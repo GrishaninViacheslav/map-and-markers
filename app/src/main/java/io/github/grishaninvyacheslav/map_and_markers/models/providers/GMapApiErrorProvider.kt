@@ -1,4 +1,4 @@
-package io.github.grishaninvyacheslav.map_and_markers.models
+package io.github.grishaninvyacheslav.map_and_markers.models.providers
 
 import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.MaybeEmitter

@@ -17,8 +17,8 @@
 //import com.google.android.gms.maps.SupportMapFragment
 //import io.github.grishaninvyacheslav.map_and_markers.R
 //import io.github.grishaninvyacheslav.map_and_markers.databinding.FragmentMapBinding
-//import io.github.grishaninvyacheslav.map_and_markers.view_models.GoogleMapState
-//import io.github.grishaninvyacheslav.map_and_markers.view_models.MapViewModel
+//import io.github.grishaninvyacheslav.map_and_markers.view_models.map.GoogleMapState
+//import io.github.grishaninvyacheslav.map_and_markers.view_models.map.MapViewModel
 //import java.util.function.Consumer
 //
 //class _MapFragment : BaseFragment<FragmentMapBinding>(FragmentMapBinding::inflate) {

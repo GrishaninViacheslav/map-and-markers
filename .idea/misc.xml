@@ -3,10 +3,21 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/drawable/outline_add_24.xml" value="0.32" />
         <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/drawable/outline_my_location_24.xml" value="0.3985" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/drawable/outline_place_24.xml" value="0.3475" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/activity_bottom_navigation.xml" value="0.1" />
         <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/activity_maps.xml" value="0.3171875" />
-        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/fragment_map.xml" value="0.3171875" />
-        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/view_progress_button.xml" value="0.67" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/dialog_edit_options.xml" value="0.72" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/fragment_map.xml" value="0.26036767849508335" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/fragment_markers.xml" value="0.28388200085506626" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/fragment_points.xml" value="0.3171875" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/item_marker.xml" value="0.26036767849508335" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/view_marker_edit_options_dialog.xml" value="0.33271547729379053" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/view_marker_title_input.xml" value="0.3171875" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/layout/view_progress_button.xml" value="0.8" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/menu/bottom_nav_menu.xml" value="0.3171875" />
+        <entry key="..\:/Users/Saeng/AndroidStudioProjects/map-and-markers/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.3171875" />
         <entry key="..\:/Users/Saeng/AndroidStudioProjects/mapandmarkers/app/src/main/res/layout/activity_maps.xml" value="0.3171875" />
         <entry key="..\:/Users/Saeng/AndroidStudioProjects/mapandmarkers/app/src/main/res/layout/fragment_markers_list.xml" value="0.3171875" />
         <entry key="..\:/Users/Saeng/AndroidStudioProjects/mapandmarkers/app/src/main/res/layout/map_fragment.xml" value="0.3171875" />

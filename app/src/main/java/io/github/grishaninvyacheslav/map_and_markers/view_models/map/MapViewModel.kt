@@ -1,4 +1,4 @@
-package io.github.grishaninvyacheslav.map_and_markers.view_models
+package io.github.grishaninvyacheslav.map_and_markers.view_models.map
 
 import android.location.Location
 import android.location.LocationListener
@@ -7,14 +7,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import io.github.grishaninvyacheslav.map_and_markers.use_cases.GMapApiErrorUseCase
-import io.github.grishaninvyacheslav.map_and_markers.use_cases.MapUseCase
+import io.github.grishaninvyacheslav.map_and_markers.use_cases.map.GMapApiErrorUseCase
+import io.github.grishaninvyacheslav.map_and_markers.use_cases.map.MapUseCase
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.disposables.Disposable
 
 class MapViewModel(
-    private val mapUseCase: MapUseCase = MapUseCase(),
+    private val mapUseCase: MapUseCase,
     private val apiErrorMessageUseCase: GMapApiErrorUseCase = GMapApiErrorUseCase(),
     var uiScheduler: Scheduler = AndroidSchedulers.mainThread()
 ) :
@@ -88,7 +88,7 @@ class MapViewModel(
         if(!isNetworkTurnedOn){
             mutableNetworkPositioningState.value = LocationPositioningState.Unavailable
             mutableLastBestLocationState.value = LocationPositioningState.Unavailable
-        } else {
+        } else if(mutableNetworkPositioningState.value == LocationPositioningState.Unavailable){
             mutableNetworkPositioningState.value = LocationPositioningState.Steady
             mutableLastBestLocationState.value = LocationPositioningState.Steady
         }
@@ -97,9 +97,13 @@ class MapViewModel(
     fun gpsSwitchedState(isGpsTurnedOn: Boolean){
         if(!isGpsTurnedOn){
             mutableGpsPositioningState.value = LocationPositioningState.Unavailable
-        } else {
+        } else if(mutableGpsPositioningState.value == LocationPositioningState.Unavailable) {
             mutableGpsPositioningState.value = LocationPositioningState.Steady
         }
+    }
+
+    fun addMarker(title: String){
+        mapUseCase.addMarkerOnCameraPosition(title)
     }
 
     private lateinit var lastKnownLocationExtraction: Disposable

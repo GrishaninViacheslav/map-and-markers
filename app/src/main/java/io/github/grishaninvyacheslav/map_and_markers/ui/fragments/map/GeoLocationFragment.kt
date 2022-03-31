@@ -1,4 +1,4 @@
-package io.github.grishaninvyacheslav.map_and_markers.ui.fragments
+package io.github.grishaninvyacheslav.map_and_markers.ui.fragments.map
 
 import android.Manifest
 import android.content.BroadcastReceiver
@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.viewbinding.ViewBinding
+import io.github.grishaninvyacheslav.map_and_markers.ui.fragments.BaseFragment
 
 
 abstract class GeoLocationFragment<Binding : ViewBinding>(

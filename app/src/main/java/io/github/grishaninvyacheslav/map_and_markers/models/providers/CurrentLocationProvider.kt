@@ -1,4 +1,4 @@
-package io.github.grishaninvyacheslav.map_and_markers.models
+package io.github.grishaninvyacheslav.map_and_markers.models.providers
 
 import android.annotation.SuppressLint
 import android.content.Context
