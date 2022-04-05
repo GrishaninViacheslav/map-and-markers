@@ -21,7 +21,7 @@ class MarkersViewModel(private val markersUseCase: MarkersUseCase) : ViewModel()
     fun requestMarkerRename(indexOfMarkerToRename: Int) {
         mutableMarkerToRenameNameState.value = Pair(
             indexOfMarkerToRename,
-            markersListState[indexOfMarkerToRename].title
+            markersListState[indexOfMarkerToRename].second.title
                 ?: MapAndMarkersApp.instance.resources.getString(
                     R.string.marker_without_title
                 )
@@ -30,12 +30,13 @@ class MarkersViewModel(private val markersUseCase: MarkersUseCase) : ViewModel()
 
     fun renameMarker(indexOfMarkerToRename: Int, newName: String) {
         markersUseCase.renameMarker(indexOfMarkerToRename, newName)
+            .subscribe({ /* TODO(NOT YET IMPLEMENTED) */ }, { /* TODO(NOT YET IMPLEMENTED) */ })
     }
 
-    fun requestMarkerRemove(indexOfMarkerToRemove: Int){
+    fun requestMarkerRemove(indexOfMarkerToRemove: Int) {
         mutableMarkerToRemoveNameState.value = Pair(
             indexOfMarkerToRemove,
-            markersListState[indexOfMarkerToRemove].title
+            markersListState[indexOfMarkerToRemove].second.title
                 ?: MapAndMarkersApp.instance.resources.getString(
                     R.string.marker_without_title
                 )
@@ -44,5 +45,6 @@ class MarkersViewModel(private val markersUseCase: MarkersUseCase) : ViewModel()
 
     fun removeMarker(indexOfMarkerToRemove: Int) {
         markersUseCase.removeMarker(indexOfMarkerToRemove)
+            .subscribe({ /* TODO(NOT YET IMPLEMENTED) */ }, { /* TODO(NOT YET IMPLEMENTED) */ })
     }
 }

@@ -3,6 +3,8 @@ package io.github.grishaninvyacheslav.map_and_markers.ui.fragments.map
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -16,10 +18,7 @@ import io.github.grishaninvyacheslav.map_and_markers.ui.activity.BottomNavigatio
 import io.github.grishaninvyacheslav.map_and_markers.ui.activity.IBottomNavigation
 import io.github.grishaninvyacheslav.map_and_markers.ui.views.ProgressButton
 import io.github.grishaninvyacheslav.map_and_markers.use_cases.map.MapUseCase
-import io.github.grishaninvyacheslav.map_and_markers.view_models.map.GoogleMapState
-import io.github.grishaninvyacheslav.map_and_markers.view_models.map.LocationPositioningState
-import io.github.grishaninvyacheslav.map_and_markers.view_models.map.MapViewModel
-import io.github.grishaninvyacheslav.map_and_markers.view_models.map.MapViewModelFactory
+import io.github.grishaninvyacheslav.map_and_markers.view_models.map.*
 import kotlin.properties.Delegates
 
 class MapFragment : GeoLocationFragment<FragmentMapBinding>(FragmentMapBinding::inflate) {
@@ -78,7 +77,7 @@ class MapFragment : GeoLocationFragment<FragmentMapBinding>(FragmentMapBinding::
     override fun onFabClick() = showEditOptions()
 
     private var isTitleDialogShown by Delegates.notNull<Boolean>()
-    override fun onActionConfirm(){
+    override fun onActionConfirm() {
         isTitleDialogShown = true
         newMarkerTitleDialog.show()
     }
@@ -94,13 +93,13 @@ class MapFragment : GeoLocationFragment<FragmentMapBinding>(FragmentMapBinding::
         }
     }
 
-    private fun restoreViewState(savedInstanceState: Bundle?){
+    private fun restoreViewState(savedInstanceState: Bundle?) {
         isEditOptionShown = savedInstanceState?.getBoolean("isEditOptionShown") ?: false
-        if(isEditOptionShown){
+        if (isEditOptionShown) {
             showEditOptions()
         }
         isTitleDialogShown = savedInstanceState?.getBoolean("isTitleDialogShown") ?: false
-        if(isTitleDialogShown){
+        if (isTitleDialogShown) {
             newMarkerTitleDialog.show()
         }
         savedInstanceState?.getString("titleInputValue")?.let {
@@ -125,7 +124,7 @@ class MapFragment : GeoLocationFragment<FragmentMapBinding>(FragmentMapBinding::
             }
         }
         showMyLastBestLocation.setOnClickListener {
-            if (!requestNetworkProviderIfNeeded() && !requestGpsProviderIfNeeded()) {
+            if (!requestGpsProviderIfNeeded()) {
                 viewModel.showLastBestKnownLocation()
             }
         }
@@ -133,7 +132,12 @@ class MapFragment : GeoLocationFragment<FragmentMapBinding>(FragmentMapBinding::
 
     private fun initLiveDataObservers() {
         viewModel.googleMapState.observe(viewLifecycleOwner) { renderGoogleMapState(it) }
-        viewModel.apiErrorState.observe(viewLifecycleOwner) { renderApiErrorState(it) }
+        viewModel.apiErrorState.observe(viewLifecycleOwner) { showErrorMessage(it) }
+        viewModel.localRepositoryState.observe(viewLifecycleOwner) {
+            if (it is LocalRepositoryState.Error) {
+                showErrorMessage(it.message)
+            }
+        }
         viewModel.lastLocationState.observe(viewLifecycleOwner) { renderLastLocationState(it) }
         viewModel.gpsPositioningState.observe(viewLifecycleOwner) { renderGpsPositionState(it) }
         viewModel.networkPositioningState.observe(viewLifecycleOwner) {
@@ -145,15 +149,48 @@ class MapFragment : GeoLocationFragment<FragmentMapBinding>(FragmentMapBinding::
 
 
     private fun renderGoogleMapState(state: GoogleMapState) = when (state) {
-        is GoogleMapState.Initializing -> {
+        is GoogleMapState.Error -> {
+            Log.d("[STATE]", "GoogleMapState.Error")
+            with(binding) {
+                updateNetworkLocation.visibility = INVISIBLE
+                updateGpsLocation.visibility = INVISIBLE
+                showMyLastBestLocation.visibility = INVISIBLE
+                progressBar.visibility = INVISIBLE
+            }
+            showErrorMessage(state.message)
+        }
+        GoogleMapState.Loading -> {
+            Log.d("[STATE]", "GoogleMapState.Loading")
+            with(binding) {
+                updateNetworkLocation.visibility = INVISIBLE
+                updateGpsLocation.visibility = INVISIBLE
+                showMyLastBestLocation.visibility = INVISIBLE
+                progressBar.visibility = VISIBLE
+            }
+        }
+        is GoogleMapState.Ready -> {
+            Log.d("[STATE]", "GoogleMapState.Ready")
+            with(binding) {
+                updateNetworkLocation.visibility = VISIBLE
+                updateGpsLocation.visibility = VISIBLE
+                showMyLastBestLocation.visibility = VISIBLE
+                progressBar.visibility = INVISIBLE
+            }
             val mapFragment =
                 childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
             mapFragment.getMapAsync(state.onMapReadyCallback)
         }
     }
 
-    private fun renderApiErrorState(error: String) =
-        Toast.makeText(requireContext(), "Произошла ошибка API:\n$error", Toast.LENGTH_LONG).show()
+    private fun showErrorMessage(errorMessage: String?) {
+        val message =
+            if (errorMessage == null) getString(R.string.unspecified_error) else String.format(
+                getString(R.string.specified_error),
+                errorMessage
+            )
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    }
+
 
     private fun renderLastLocationState(state: LocationPositioningState) =
         renderProgressButtonState(binding.showMyLastBestLocation, state)

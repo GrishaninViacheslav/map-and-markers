@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
+import android.util.Log
+import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -13,11 +15,15 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
 import io.github.grishaninvyacheslav.map_and_markers.MapAndMarkersApp
 import io.github.grishaninvyacheslav.map_and_markers.R
+import io.github.grishaninvyacheslav.map_and_markers.entities.MutableListLiveData
 import io.github.grishaninvyacheslav.map_and_markers.models.providers.CurrentLocationProvider
 import io.github.grishaninvyacheslav.map_and_markers.entities.NoKnownLastLocationException
 import io.github.grishaninvyacheslav.map_and_markers.models.repositories.IMarkersRepository
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.lang.RuntimeException
 import javax.inject.Inject
 
 class MapUseCase(
@@ -32,7 +38,7 @@ class MapUseCase(
     lateinit var markersRepository: IMarkersRepository
 
     private lateinit var gMap: GoogleMap
-    private val markers = mutableListOf<Marker>()
+    private val markersBuffer = mutableListOf<Marker>()
 
     private var cameraCurrentPosition: CameraPosition? = null
 
@@ -52,60 +58,83 @@ class MapUseCase(
         MapAndMarkersApp.instance.applicationContext
     )
 
-    val onMapReadyCallback = OnMapReadyCallback { googleMap ->
-        gMap = googleMap.apply {
-            setOnCameraMoveListener {
-                cameraCurrentPosition = cameraPosition
+    var liveMarkersOptionsList: MutableListLiveData<Pair<String, MarkerOptions>>? = null
+    var markerOptionsObserver: Observer<MutableList<Pair<String, MarkerOptions>>>? = null
+
+    fun getMapReadyCallback(): Single<OnMapReadyCallback> = Single.fromCallable {
+        Log.d("[BUG]", "getMapReadyCallback() Single.fromCallable")
+        if (liveMarkersOptionsList == null) {
+            liveMarkersOptionsList = markersRepository.getMarkersBuffer()
+        }
+        Log.d("[BUG]", "return@fromCallable OnMapReadyCallback")
+        return@fromCallable OnMapReadyCallback { googleMap ->
+            Log.d("[BUG]", "OnMapReadyCallback")
+            gMap = googleMap.apply {
+                setOnCameraMoveListener {
+                    cameraCurrentPosition = cameraPosition
+                }
+            }
+            val initialCamera =
+                cameraCurrentPosition?.let { CameraUpdateFactory.newCameraPosition(it) }
+                    ?: try {
+                        CameraUpdateFactory.newLatLngZoom(
+                            locationProvider.getLastKnownLocation()
+                                .let { LatLng(it.latitude, it.longitude) },
+                            15f
+                        )
+                    } catch (e: NoKnownLastLocationException) {
+                        defaultCamera
+                    }
+            gMap.moveCamera(initialCamera)
+            cameraCurrentPosition = gMap.cameraPosition
+            Log.d("[BUG]", "markersRepository.getMarkersBuffer()")
+            if (markerOptionsObserver == null) {
+                markerOptionsObserver = MarkerOptionsObserver()
+                liveMarkersOptionsList!!.observeForever(markerOptionsObserver!!)
+            } else {
+                updateMarkers(liveMarkersOptionsList!!.map { it.second })
             }
         }
-
-        val initialCamera =
-            cameraCurrentPosition?.let { CameraUpdateFactory.newCameraPosition(it) }
-                ?: try {
-                    CameraUpdateFactory.newLatLngZoom(
-                        locationProvider.getLastKnownLocation()
-                            .let { LatLng(it.latitude, it.longitude) },
-                        15f
-                    )
-                } catch (e: NoKnownLastLocationException) {
-                    defaultCamera
-                }
-        gMap.moveCamera(initialCamera)
-        cameraCurrentPosition = gMap.cameraPosition
-        markersRepository.getMarkers().observeForever { updateMarkers(it) }
-    }
+    }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     private fun updateMarkers(markerOptions: List<MarkerOptions>) {
-        for (marker in markers) {
+        for (marker in markersBuffer) {
             marker.remove()
         }
         for (option in markerOptions) {
-            gMap.addMarker(option)?.let { markers.add(it) }
+            option.icon(
+                markerIcon
+            )
+            gMap.addMarker(option)?.let { markersBuffer.add(it) }
         }
     }
 
-    fun addMarkerOnCameraPosition(title: String) =
-        cameraCurrentPosition?.let { cameraCurrentPosition ->
-            gMap.addMarker(
-                MarkerOptions()
-                    .position(
-                        LatLng(
-                            cameraCurrentPosition.target.latitude,
-                            cameraCurrentPosition.target.longitude
-                        )
-                    )
-                    .title(title).icon(
-                        markerIcon
-                    ).also {
-                        markersRepository.saveMarker(it)
-                    }
-            ).also {
-                it?.let { markers.add(it) }
+    fun addMarkerOnCameraPosition(title: String): Completable {
+        val markerOptions = MarkerOptions()
+            .position(
+                LatLng(
+                    cameraCurrentPosition!!.target.latitude,
+                    cameraCurrentPosition!!.target.longitude
+                )
+            )
+            .title(title).icon(
+                markerIcon
+            )
+        Log.d("[FUCK]", "gMap.addMarker")
+        val marker = gMap.addMarker(
+            markerOptions
+        )
+            ?: return Completable.error(RuntimeException("При добавлении маркера на экземпляр Google карты произошла ошибка"))
+        return Completable.fromCallable {
+            try {
+                Log.d("[FUCK]", "markersRepository.saveMarker(markerOptions)")
+                markersRepository.saveMarker(markerOptions)
+                Log.d("[FUCK]", "markersBuffer.add(marker)")
+                markersBuffer.add(marker)
+            } catch (e: Exception) {
+                throw RuntimeException("Не удалось сохранить данные о маркере на устройстве")
             }
-        }
-
-    fun removeMarker(marker: Marker) {
-
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
     }
 
     fun navigateTo(location: Location) {
@@ -127,15 +156,18 @@ class MapUseCase(
         locationProvider.requestCurrentGpsLocation(locationListener)
     }
 
-//    fun updateLocation(): Single<Location> = Single.fromCallable {
-//        var location: Location? = null
-//        locationProvider.requestCurrentLocation { location = it }
-//        while (location == null) { } // TODO: как избежать такого?
-//        return@fromCallable location
-//    }
-
     fun getLastKnownLocation(): Single<Location> =
         Single.fromCallable { locationProvider.getLastKnownLocation() }
             .subscribeOn(Schedulers.io())
+
+    private inner class MarkerOptionsObserver : Observer<MutableList<Pair<String, MarkerOptions>>> {
+        override fun onChanged(markers: MutableList<Pair<String, MarkerOptions>>) {
+            updateMarkers(markers.map { it.second })
+        }
+    }
+
+    fun onClear() {
+        markerOptionsObserver?.let { liveMarkersOptionsList?.removeObserver(it) }
+    }
 }
 

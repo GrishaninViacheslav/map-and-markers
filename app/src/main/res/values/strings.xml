@@ -13,4 +13,8 @@
     <string name="marker_without_title">Безымянный маркер</string>
     <string name="rename_marker">Переименовать</string>
     <string name="remove_marker">Удалить</string>
+    <string name="marker_save_error">Не удалось сохранить маркер</string>
+    <string name="unspecified_error">Произошла ошибка</string>
+    <string name="specified_error">Произошла ошибка: %1$s</string>
+    <string name="no_markers">Список точек пуст</string>
 </resources>

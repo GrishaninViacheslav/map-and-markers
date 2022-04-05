@@ -2,6 +2,7 @@ package io.github.grishaninvyacheslav.map_and_markers.ui.fragments.markers
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.maps.model.MarkerOptions
@@ -49,9 +50,9 @@ class MarkersFragment : BaseFragment<FragmentMarkersBinding>(FragmentMarkersBind
     }
 
     private val markersDataModel = object : IMarkersDataModel {
-        var markers = mutableListOf<MarkerOptions>()
+        var markers = mutableListOf<Pair<String, MarkerOptions>>()
         override fun getCount() = markers.size
-        override fun bindView(view: IMarkerItemView) = with(markers[view.pos]) {
+        override fun bindView(view: IMarkerItemView) = with(markers[view.pos].second) {
             view.setTitle(title ?: getString(R.string.marker_without_title))
             view.setCoordinated(position)
         }
@@ -79,7 +80,7 @@ class MarkersFragment : BaseFragment<FragmentMarkersBinding>(FragmentMarkersBind
         }
     }
 
-    private fun renderMarkersList(markers: MutableList<MarkerOptions>) = with(binding) {
+    private fun renderMarkersList(markers: MutableList<Pair<String, MarkerOptions>>) = with(binding) {
         if (adapter == null) {
             markersListView.layoutManager = LinearLayoutManager(context)
             adapter = MarkersListAdapter(
@@ -99,11 +100,14 @@ class MarkersFragment : BaseFragment<FragmentMarkersBinding>(FragmentMarkersBind
             markersListView.adapter = adapter
         } else {
             markersDataModel.markers = markers
-            updateMarkersList()
         }
+        updateMarkersList()
     }
 
     private fun updateMarkersList() {
-        adapter?.notifyDataSetChanged()
+        adapter?.apply {
+            notifyDataSetChanged()
+            binding.noMarkers.isVisible = (itemCount == 0)
+        }
     }
 }

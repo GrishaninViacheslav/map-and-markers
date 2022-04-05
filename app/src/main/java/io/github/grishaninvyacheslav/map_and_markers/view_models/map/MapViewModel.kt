@@ -11,24 +11,37 @@ import io.github.grishaninvyacheslav.map_and_markers.use_cases.map.GMapApiErrorU
 import io.github.grishaninvyacheslav.map_and_markers.use_cases.map.MapUseCase
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 
 class MapViewModel(
     private val mapUseCase: MapUseCase,
     private val apiErrorMessageUseCase: GMapApiErrorUseCase = GMapApiErrorUseCase(),
-    var uiScheduler: Scheduler = AndroidSchedulers.mainThread()
+    private var uiScheduler: Scheduler = AndroidSchedulers.mainThread(),
+    private val disposables: CompositeDisposable = CompositeDisposable()
 ) :
     ViewModel() {
     private val mutableGoogleGoogleMapState: MutableLiveData<GoogleMapState> = MutableLiveData()
     private val mutableLastBestLocationState: MutableLiveData<LocationPositioningState> =
         MutableLiveData()
-    private val mutableNetworkPositioningState: MutableLiveData<LocationPositioningState> = MutableLiveData()
-    private val mutableGpsPositioningState: MutableLiveData<LocationPositioningState> = MutableLiveData()
+    private val mutableNetworkPositioningState: MutableLiveData<LocationPositioningState> =
+        MutableLiveData()
+    private val mutableGpsPositioningState: MutableLiveData<LocationPositioningState> =
+        MutableLiveData()
+
+    private val mutableLocalRepositoryState: MutableLiveData<LocalRepositoryState> =
+        MutableLiveData()
 
     val googleMapState: LiveData<GoogleMapState>
         get() {
-            mutableGoogleGoogleMapState.value =
-                GoogleMapState.Initializing(mapUseCase.onMapReadyCallback)
+            mutableGoogleGoogleMapState.value = GoogleMapState.Loading
+            disposables.add(
+                mapUseCase.getMapReadyCallback().subscribe({
+                    mutableGoogleGoogleMapState.value = GoogleMapState.Ready(it)
+                }, {
+                    mutableGoogleGoogleMapState.value = GoogleMapState.Error(it.toString())
+                })
+            )
             return mutableGoogleGoogleMapState
         }
 
@@ -50,7 +63,9 @@ class MapViewModel(
     val apiErrorState: LiveData<String> =
         LiveDataReactiveStreams.fromPublisher(apiErrorMessageUseCase.errorMessage.toFlowable())
 
-    fun updateNetworkLocation(){
+    val localRepositoryState: LiveData<LocalRepositoryState> = mutableLocalRepositoryState
+
+    fun updateNetworkLocation() {
         if (mutableNetworkPositioningState.value == LocationPositioningState.Positioning) {
             return
         }
@@ -83,27 +98,34 @@ class MapViewModel(
     }
 
 
-
-    fun networkSwitchedState(isNetworkTurnedOn: Boolean){
-        if(!isNetworkTurnedOn){
+    fun networkSwitchedState(isNetworkTurnedOn: Boolean) {
+        if (!isNetworkTurnedOn) {
             mutableNetworkPositioningState.value = LocationPositioningState.Unavailable
             mutableLastBestLocationState.value = LocationPositioningState.Unavailable
-        } else if(mutableNetworkPositioningState.value == LocationPositioningState.Unavailable){
+        } else if (mutableNetworkPositioningState.value == LocationPositioningState.Unavailable) {
             mutableNetworkPositioningState.value = LocationPositioningState.Steady
             mutableLastBestLocationState.value = LocationPositioningState.Steady
         }
     }
 
-    fun gpsSwitchedState(isGpsTurnedOn: Boolean){
-        if(!isGpsTurnedOn){
+    fun gpsSwitchedState(isGpsTurnedOn: Boolean) {
+        if (!isGpsTurnedOn) {
             mutableGpsPositioningState.value = LocationPositioningState.Unavailable
-        } else if(mutableGpsPositioningState.value == LocationPositioningState.Unavailable) {
+        } else if (mutableGpsPositioningState.value == LocationPositioningState.Unavailable) {
             mutableGpsPositioningState.value = LocationPositioningState.Steady
         }
     }
 
-    fun addMarker(title: String){
-        mapUseCase.addMarkerOnCameraPosition(title)
+    fun addMarker(title: String) {
+        mutableLocalRepositoryState.value = LocalRepositoryState.InProgress
+        disposables.add(
+            mapUseCase.addMarkerOnCameraPosition(title)
+                .subscribe({
+                    mutableLocalRepositoryState.value = LocalRepositoryState.Success
+                }, {
+                    mutableLocalRepositoryState.value = LocalRepositoryState.Error(it.message)
+                })
+        )
     }
 
     private lateinit var lastKnownLocationExtraction: Disposable
@@ -128,10 +150,12 @@ class MapViewModel(
             mutableNetworkPositioningState.value = LocationPositioningState.Unavailable
             mutableLastBestLocationState.value = LocationPositioningState.Unavailable
         }
+
         override fun onProviderEnabled(provider: String) {
             mutableNetworkPositioningState.value = LocationPositioningState.Steady
             mutableLastBestLocationState.value = LocationPositioningState.Steady
         }
+
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
     }
 
@@ -154,10 +178,18 @@ class MapViewModel(
             mutableGpsPositioningState.value = LocationPositioningState.Unavailable
             mutableLastBestLocationState.value = LocationPositioningState.Unavailable
         }
+
         override fun onProviderEnabled(provider: String) {
             mutableGpsPositioningState.value = LocationPositioningState.Steady
             mutableLastBestLocationState.value = LocationPositioningState.Steady
         }
+
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposables.dispose()
+        mapUseCase.onClear()
     }
 }
