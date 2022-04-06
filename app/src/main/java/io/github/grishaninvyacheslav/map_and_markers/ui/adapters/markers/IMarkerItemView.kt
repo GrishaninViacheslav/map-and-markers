@@ -5,5 +5,5 @@ import com.google.android.gms.maps.model.LatLng
 interface IMarkerItemView {
     var pos: Int
     fun setTitle(title: String)
-    fun setCoordinated(coordinates: LatLng)
+    fun setCoordinates(coordinates: LatLng)
 }

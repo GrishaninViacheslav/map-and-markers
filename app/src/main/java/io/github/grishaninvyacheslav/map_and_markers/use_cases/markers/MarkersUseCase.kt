@@ -10,7 +10,7 @@ class MarkersUseCase {
     @Inject
     lateinit var markersRepository: IMarkersRepository
 
-    fun getMarkers() = markersRepository.getMarkersBuffer()
+    fun getMarkers() = markersRepository.getMarkers()
 
     fun renameMarker(indexOfMarkerToRename: Int, newName: String) = Completable.fromCallable {
         markersRepository.renameMarker(indexOfMarkerToRename, newName)

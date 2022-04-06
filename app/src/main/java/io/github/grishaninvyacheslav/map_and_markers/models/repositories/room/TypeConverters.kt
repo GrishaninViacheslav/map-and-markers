@@ -4,7 +4,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import java.util.*
 
-fun Marker.toMarkerOptions() = MarkerOptions()
+fun MarkerEntity.toMarkerOptions() = MarkerOptions()
     .position(
         LatLng(
             latitude,
@@ -14,7 +14,7 @@ fun Marker.toMarkerOptions() = MarkerOptions()
     .title(title)
 
 fun MarkerOptions.toMarkerEntity() =
-    Marker(
+    MarkerEntity(
         uid = UUID.randomUUID().toString(),
         title = title ?: "",
         latitude = position.latitude,
@@ -22,7 +22,7 @@ fun MarkerOptions.toMarkerEntity() =
     )
 
 fun Pair<String, MarkerOptions>.toMarkerEntity() =
-    Marker(
+    MarkerEntity(
         uid = first,
         title = second.title ?: "",
         latitude = second.position.latitude,

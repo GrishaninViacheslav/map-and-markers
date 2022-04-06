@@ -21,7 +21,7 @@ class MarkerRenameDialogFactory(private val context: Context) {
             }
             setPositiveButton(
                 R.string.confirm
-            ) { dialog, id ->
+            ) { dialog, _ ->
                 onRenameCallback.invoke(newMarkerTitleInputView.text.toString())
                 dialog.dismiss()
             }

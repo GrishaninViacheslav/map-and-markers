@@ -19,7 +19,7 @@ class MarkersRepository @Inject constructor(private val markersDao: MarkersDao) 
         }
     }
 
-    override fun getMarkersBuffer(): MutableListLiveData<Pair<String, MarkerOptions>> {
+    override fun getMarkers(): MutableListLiveData<Pair<String, MarkerOptions>> {
         if (!markersBuffer.isCollectionNotNull()) {
             markersBuffer.postValue(markersDao.getAll().map { Pair(it.uid, it.toMarkerOptions()) }.toMutableList())
         }

@@ -21,6 +21,17 @@ class EditOptionsDialog(context: Context, view: IMarkerItemView) {
                 }
             }.root
         )
+        setBehaviorAsAlwaysExpanded(behavior)
+    }
+
+    var onRenameMarkerClick: ((view: IMarkerItemView) -> Unit)? = null
+    var onRemoveMarkerClick: ((view: IMarkerItemView) -> Unit)? = null
+
+    fun show(){
+        dialog.show()
+    }
+
+    private fun setBehaviorAsAlwaysExpanded(behavior: BottomSheetBehavior<*>){
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         behavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
@@ -29,15 +40,7 @@ class EditOptionsDialog(context: Context, view: IMarkerItemView) {
                     behavior.state = BottomSheetBehavior.STATE_EXPANDED
                 }
             }
-
             override fun onSlide(bottomSheet: View, slideOffset: Float) {}
         })
-    }
-
-    var onRenameMarkerClick: ((view: IMarkerItemView) -> Unit)? = null
-    var onRemoveMarkerClick: ((view: IMarkerItemView) -> Unit)? = null
-
-    fun show(){
-        dialog.show()
     }
 }

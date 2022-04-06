@@ -9,13 +9,11 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.viewbinding.ViewBinding
 import io.github.grishaninvyacheslav.map_and_markers.ui.fragments.BaseFragment
-
 
 abstract class GeoLocationFragment<Binding : ViewBinding>(
     bindingFactory: (inflater: LayoutInflater, parent: ViewGroup?, attachToParent: Boolean) -> Binding
@@ -28,9 +26,7 @@ abstract class GeoLocationFragment<Binding : ViewBinding>(
 
     private val locationSwitchStateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d("[MYLOG]", "onReceive")
             if (intent.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
-                Log.d("[MYLOG]", "intent.action != LocationManager.PROVIDERS_CHANGED_ACTION")
                 gpsSwitchStateCallback?.invoke(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
                 networkSwitchStateCallback?.invoke(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
             }
@@ -42,7 +38,7 @@ abstract class GeoLocationFragment<Binding : ViewBinding>(
         requireContext().registerReceiver(
             locationSwitchStateReceiver,
             IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
-        );
+        )
     }
 
     override fun onDestroy() {

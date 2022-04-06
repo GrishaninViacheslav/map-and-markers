@@ -1,19 +1,28 @@
 package io.github.grishaninvyacheslav.map_and_markers.di
 
+import android.content.Context
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
-import io.github.grishaninvyacheslav.map_and_markers.MapAndMarkersApp
+import io.github.grishaninvyacheslav.map_and_markers.models.repositories.room.IMarkersDatabase
 import io.github.grishaninvyacheslav.map_and_markers.models.repositories.room.MarkersDao
 import io.github.grishaninvyacheslav.map_and_markers.models.repositories.room.MarkersDatabase
 import javax.inject.Singleton
 
 @Module
 class RoomModule {
-    @Singleton
-    @Provides
-    fun provideMarkersDataBase(mapAndMarkersApp: MapAndMarkersApp): MarkersDatabase = MarkersDatabase.getInstance(mapAndMarkersApp.applicationContext)
+    private val markersDatabaseName = "markers-database"
 
     @Singleton
     @Provides
-    fun provideMarkersDao(markersDatabase: MarkersDatabase): MarkersDao = markersDatabase.markersDao()
+    fun provideMarkersDatabase(appContext: Context): IMarkersDatabase =
+        Room.databaseBuilder(
+            appContext,
+            MarkersDatabase::class.java, markersDatabaseName
+        ).build()
+
+    @Singleton
+    @Provides
+    fun provideMarkersDao(markersDatabase: IMarkersDatabase): MarkersDao =
+        markersDatabase.markersDao()
 }

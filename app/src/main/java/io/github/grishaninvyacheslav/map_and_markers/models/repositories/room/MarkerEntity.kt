@@ -8,7 +8,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
 @Entity
-data class Marker(
+data class MarkerEntity(
     @PrimaryKey(autoGenerate = false) val uid: String,
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "latitude") val latitude: Double,

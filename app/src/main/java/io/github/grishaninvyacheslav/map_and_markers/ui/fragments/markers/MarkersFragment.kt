@@ -24,13 +24,35 @@ class MarkersFragment : BaseFragment<FragmentMarkersBinding>(FragmentMarkersBind
         fun newInstance() = MarkersFragment()
     }
 
-    private val viewModel: MarkersViewModel by viewModels {
-        MarkersViewModelFactory(MarkersUseCase().apply {
-            MapAndMarkersApp.instance.appComponent.inject(this)
-        })
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.markersListState.observe(viewLifecycleOwner) { renderMarkersList(it) }
+        viewModel.markerToRenameNameState.observe(viewLifecycleOwner) {
+            showRenameDialog(
+                it.first,
+                it.second
+            )
+        }
+        viewModel.markerToRemoveNameState.observe(viewLifecycleOwner) {
+            showRemoveConfirmDialog(
+                it.first,
+                it.second
+            )
+        }
     }
 
-    private var adapter: MarkersListAdapter? = null
+    override fun onFabClick() =
+        (requireActivity() as IBottomNavigation).navigateTo(Screens.MarkerCreator)
+
+    private fun renderMarkersList(markers: MutableList<Pair<String, MarkerOptions>>) =
+        with(binding) {
+            if (adapter == null) {
+                initMarkersList(markers)
+            } else {
+                markersDataModel.markers = markers
+            }
+            updateMarkersList()
+        }
 
     private val markerRenameDialogFactory by lazy { MarkerRenameDialogFactory(requireContext()) }
     private fun showRenameDialog(indexOfMarkerToRename: Int, oldName: String) {
@@ -49,65 +71,51 @@ class MarkersFragment : BaseFragment<FragmentMarkersBinding>(FragmentMarkersBind
         }.show()
     }
 
-    private val markersDataModel = object : IMarkersDataModel {
-        var markers = mutableListOf<Pair<String, MarkerOptions>>()
-        override fun getCount() = markers.size
-        override fun bindView(view: IMarkerItemView) = with(markers[view.pos].second) {
-            view.setTitle(title ?: getString(R.string.marker_without_title))
-            view.setCoordinated(position)
-        }
-    }
-
-    override fun onFabClick() {
-        super.onFabClick()
-        (requireActivity() as IBottomNavigation).navigateTo(Screens.MarkerCreator)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        viewModel.markersListState.observe(viewLifecycleOwner) { renderMarkersList(it) }
-        viewModel.markerToRenameNameState.observe(viewLifecycleOwner) {
-            showRenameDialog(
-                it.first,
-                it.second
-            )
-        }
-        viewModel.markerToRemoveNameState.observe(viewLifecycleOwner) {
-            showRemoveConfirmDialog(
-                it.first,
-                it.second
-            )
-        }
-    }
-
-    private fun renderMarkersList(markers: MutableList<Pair<String, MarkerOptions>>) = with(binding) {
-        if (adapter == null) {
-            markersListView.layoutManager = LinearLayoutManager(context)
-            adapter = MarkersListAdapter(
-                markersDataModel.apply { this.markers = markers },
-                onItemClick = { view -> /* TODO("NOT YET IMPLEMENTED") */},
-                onEditClick = { view ->
-                    EditOptionsDialog(requireContext(), view).apply {
-                        onRenameMarkerClick = {
-                            viewModel.requestMarkerRename(view.pos)
-                        }
-                        onRemoveMarkerClick = {
-                            viewModel.requestMarkerRemove(view.pos)
-                        }
-                    }.show()
-                }
-            )
-            markersListView.adapter = adapter
-        } else {
-            markersDataModel.markers = markers
-        }
-        updateMarkersList()
+    private fun initMarkersList(markers: MutableList<Pair<String, MarkerOptions>>) = with(binding) {
+        markersListView.layoutManager = LinearLayoutManager(context)
+        adapter = MarkersListAdapter(
+            markersDataModel.apply { this.markers = markers },
+            onItemClick = { view -> /* TODO("NOT YET IMPLEMENTED") */ },
+            onEditClick = { view ->
+                EditOptionsDialog(requireContext(), view).apply {
+                    onRenameMarkerClick = {
+                        viewModel.requestMarkerRename(view.pos)
+                    }
+                    onRemoveMarkerClick = {
+                        viewModel.requestMarkerRemove(view.pos)
+                    }
+                }.show()
+            }
+        )
+        markersListView.adapter = adapter
     }
 
     private fun updateMarkersList() {
         adapter?.apply {
             notifyDataSetChanged()
             binding.noMarkers.isVisible = (itemCount == 0)
+        }
+    }
+
+    private val viewModel: MarkersViewModel by viewModels {
+        MarkersViewModelFactory(MarkersUseCase().apply {
+            MapAndMarkersApp.instance.appComponent.inject(this)
+        })
+    }
+
+    private var adapter: MarkersListAdapter? = null
+
+    private val markersDataModel = object : IMarkersDataModel {
+        var markers = listOf<Pair<String, MarkerOptions>>()
+        override fun getCount() = markers.size
+        override fun bindView(view: IMarkerItemView) = with(markers[view.pos].second) {
+            view.setTitle(
+                if (!title.isNullOrBlank())
+                    title!!
+                else
+                    getString(R.string.marker_without_title)
+            )
+            view.setCoordinates(position)
         }
     }
 }

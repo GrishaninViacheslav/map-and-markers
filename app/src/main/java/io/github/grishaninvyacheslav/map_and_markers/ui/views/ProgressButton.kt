@@ -4,10 +4,8 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import io.github.grishaninvyacheslav.map_and_markers.MapAndMarkersApp
 import io.github.grishaninvyacheslav.map_and_markers.R
 import io.github.grishaninvyacheslav.map_and_markers.databinding.ViewProgressButtonBinding
-
 
 class ProgressButton : FrameLayout {
     constructor(context: Context) : this(context, null)
@@ -45,7 +43,7 @@ class ProgressButton : FrameLayout {
         progressBar.visibility = VISIBLE
         button.setIconTintResource(R.color.white)
         button.setBackgroundColor(
-            MapAndMarkersApp.instance.applicationContext.getColor(
+            context.getColor(
                 R.color.purple_500
             )
         )
@@ -54,12 +52,12 @@ class ProgressButton : FrameLayout {
     private fun showUnavailableState() = with(binding) {
         progressBar.visibility = INVISIBLE
         button.setIconTintResource(R.color.black)
-        button.setBackgroundColor(MapAndMarkersApp.instance.applicationContext.getColor(R.color.gray))
+        button.setBackgroundColor(context.getColor(R.color.gray))
     }
 
     private fun showSteadyState() = with(binding) {
         progressBar.visibility = INVISIBLE
         button.setIconTintResource(R.color.white)
-        button.setBackgroundColor(MapAndMarkersApp.instance.applicationContext.getColor(R.color.purple_500))
+        button.setBackgroundColor(context.getColor(R.color.purple_500))
     }
 }

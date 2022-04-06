@@ -20,7 +20,7 @@ class MarkerRemoveConfirmDialogFactory {
         }
         setPositiveButton(
             R.string.remove_marker
-        ) { dialog, id ->
+        ) { dialog, _ ->
             onConfirmCallback.invoke()
             dialog.dismiss()
         }

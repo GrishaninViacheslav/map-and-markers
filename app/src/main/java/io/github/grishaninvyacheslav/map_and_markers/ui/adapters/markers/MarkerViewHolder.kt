@@ -22,7 +22,7 @@ class MarkerViewHolder(
         binding.markerTitle.text = title
     }
 
-    override fun setCoordinated(coordinates: LatLng) {
+    override fun setCoordinates(coordinates: LatLng) {
         binding.coordinates.text = coordinates.toString()
     }
 }

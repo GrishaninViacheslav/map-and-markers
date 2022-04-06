@@ -70,7 +70,7 @@ class MapViewModel(
             return
         }
         mutableNetworkPositioningState.value = LocationPositioningState.Positioning
-        mapUseCase.updateNetworkLocation(networkLocationListener)
+        mapUseCase.updateNetworkLocation(CurrentLocationListener(mutableNetworkPositioningState))
     }
 
     fun updateGpsLocation() {
@@ -78,7 +78,7 @@ class MapViewModel(
             return
         }
         mutableGpsPositioningState.value = LocationPositioningState.Positioning
-        mapUseCase.updateGpsLocation(gpsLocationListener)
+        mapUseCase.updateGpsLocation(CurrentLocationListener(mutableGpsPositioningState))
     }
 
     fun showLastBestKnownLocation() {
@@ -130,10 +130,9 @@ class MapViewModel(
 
     private lateinit var lastKnownLocationExtraction: Disposable
 
-    // TODO: отрефакторить: копирует gpsLocationListener
-    private val networkLocationListener = object : LocationListener {
+    private inner class CurrentLocationListener(private val positioningState: MutableLiveData<LocationPositioningState>): LocationListener{
         override fun onLocationChanged(location: Location) {
-            mutableNetworkPositioningState.value = LocationPositioningState.Steady
+            positioningState.value = LocationPositioningState.Steady
             when (mutableLastBestLocationState.value) {
                 LocationPositioningState.Positioning -> {
                     lastKnownLocationExtraction.dispose()
@@ -147,40 +146,12 @@ class MapViewModel(
         }
 
         override fun onProviderDisabled(provider: String) {
-            mutableNetworkPositioningState.value = LocationPositioningState.Unavailable
+            positioningState.value = LocationPositioningState.Unavailable
             mutableLastBestLocationState.value = LocationPositioningState.Unavailable
         }
 
         override fun onProviderEnabled(provider: String) {
-            mutableNetworkPositioningState.value = LocationPositioningState.Steady
-            mutableLastBestLocationState.value = LocationPositioningState.Steady
-        }
-
-        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-    }
-
-    private val gpsLocationListener = object : LocationListener {
-        override fun onLocationChanged(location: Location) {
-            mutableGpsPositioningState.value = LocationPositioningState.Steady
-            when (mutableLastBestLocationState.value) {
-                LocationPositioningState.Positioning -> {
-                    lastKnownLocationExtraction.dispose()
-                    mutableLastBestLocationState.value = LocationPositioningState.Steady
-                    mapUseCase.navigateTo(location)
-                }
-                LocationPositioningState.Unavailable -> {
-                    mutableLastBestLocationState.value = LocationPositioningState.Steady
-                }
-            }
-        }
-
-        override fun onProviderDisabled(provider: String) {
-            mutableGpsPositioningState.value = LocationPositioningState.Unavailable
-            mutableLastBestLocationState.value = LocationPositioningState.Unavailable
-        }
-
-        override fun onProviderEnabled(provider: String) {
-            mutableGpsPositioningState.value = LocationPositioningState.Steady
+            positioningState.value = LocationPositioningState.Steady
             mutableLastBestLocationState.value = LocationPositioningState.Steady
         }
 

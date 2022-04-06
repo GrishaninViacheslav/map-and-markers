@@ -1,4 +1,4 @@
-package io.github.grishaninvyacheslav.map_and_markers.models.providers
+package io.github.grishaninvyacheslav.map_and_markers.models.providers.current_location
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,18 +6,17 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
-import android.os.Bundle
-import io.github.grishaninvyacheslav.map_and_markers.MapAndMarkersApp
-import io.github.grishaninvyacheslav.map_and_markers.entities.NoKnownLastLocationException
+import javax.inject.Inject
 
-class CurrentLocationProvider(
-    private val context: Context = MapAndMarkersApp.instance.applicationContext,
+class CurrentLocationProvider @Inject constructor(
+    private val context: Context
+) : ICurrentLocationProvider {
     private val locationManager: LocationManager = context.getSystemService(
         Context.LOCATION_SERVICE
     ) as LocationManager
-) {
+
     @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(): Location {
+    override fun getLastKnownLocation(): Location? {
         val providers: List<String> = locationManager.getProviders(true)
         var bestLocation: Location? = null
         for (provider in providers) {
@@ -26,12 +25,18 @@ class CurrentLocationProvider(
                 bestLocation = location
             }
         }
-        if (bestLocation == null) {
-            throw NoKnownLastLocationException()
-        }
         return bestLocation
     }
 
+    @SuppressLint("MissingPermission")
+    override fun requestCurrentNetworkLocation(
+        locationListener: LocationListener
+    ) = requestCurrentLocation(locationListener, LocationManager.NETWORK_PROVIDER)
+
+    @SuppressLint("MissingPermission")
+    override fun requestCurrentGpsLocation(
+        locationListener: LocationListener
+    ) = requestCurrentLocation(locationListener, LocationManager.GPS_PROVIDER)
 
     @SuppressLint("MissingPermission")
     private fun requestCurrentLocation(
@@ -39,35 +44,22 @@ class CurrentLocationProvider(
         locationProvider: String
     ) =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            getCurrentLocation_R(locationListener, locationProvider)
+            getCurrentLocation(locationListener, locationProvider)
         } else {
             requestSingleUpdate(locationListener, locationProvider)
         }
 
-    @SuppressLint("MissingPermission")
-    fun requestCurrentNetworkLocation(
-        locationListener: LocationListener
-    ) = requestCurrentLocation(locationListener, LocationManager.NETWORK_PROVIDER)
-
-    @SuppressLint("MissingPermission")
-    fun requestCurrentGpsLocation(
-        locationListener: LocationListener
-    ) = requestCurrentLocation(locationListener, LocationManager.GPS_PROVIDER)
-
     @SuppressLint("MissingPermission", "NewApi")
-    private fun getCurrentLocation_R(
+    private fun getCurrentLocation(
         locationListener: LocationListener,
         locationProvider: String
     ) =
-    // TODO: проверить на эмуляторе
-        // TODO: разобраться как вызывать onProviderDisabled и onProviderEnabled
         locationManager.getCurrentLocation(
             locationProvider,
             null,
             context.mainExecutor,
             locationListener::onLocationChanged
         )
-
 
     @SuppressLint("MissingPermission")
     private fun requestSingleUpdate(
@@ -83,6 +75,5 @@ class CurrentLocationProvider(
             locationProvider,
             locationListener,
             null
-        );
-
+        )
 }

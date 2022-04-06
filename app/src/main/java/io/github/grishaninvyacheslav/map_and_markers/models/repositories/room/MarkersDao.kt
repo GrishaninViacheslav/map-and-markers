@@ -4,15 +4,15 @@ import androidx.room.*
 
 @Dao
 interface MarkersDao {
-    @Query("SELECT * FROM marker")
-    fun getAll(): List<Marker>
+    @Query("SELECT * FROM markerEntity")
+    fun getAll(): List<MarkerEntity>
 
     @Insert
-    fun insertAll(vararg markers: Marker)
+    fun insertAll(vararg markerEntities: MarkerEntity)
 
     @Update
-    fun update(marker: Marker)
+    fun update(markerEntity: MarkerEntity)
 
     @Delete
-    fun delete(marker: Marker)
+    fun delete(markerEntity: MarkerEntity)
 }
