@@ -1,4 +1,20 @@
 <resources>
     <string name="app_name">map-and-markers</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="map">Карта</string>
+    <string name="points">Точки</string>
+    <string name="add_marker">Добавить точку</string>
+    <string name="cancel">Отмена</string>
+    <string name="confirm">Создать</string>
+    <string name="marker_title">Название точки</string>
+    <string name="remove_marker_title">Удаление точки</string>
+    <string name="remove_marker_text">Уверены, что хотите удалить точку "%1$s"?</string>
+    <string name="marker_title_hint">Введите название точки</string>
+    <string name="marker_without_title">Безымянная точка</string>
+    <string name="rename_marker">Переименовать</string>
+    <string name="remove_marker">Удалить</string>
+    <string name="marker_save_error">Не удалось сохранить точку</string>
+    <string name="unspecified_error">Произошла ошибка</string>
+    <string name="specified_error">Произошла ошибка: %1$s</string>
+    <string name="no_markers">Список точек пуст</string>
 </resources>

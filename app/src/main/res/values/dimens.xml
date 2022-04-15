@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="outer_margin">20dp</dimen>
+    <dimen name="outer_margin_half">10dp</dimen>
+    <dimen name="item_title">20sp</dimen>
+    <dimen name="corner_radius">10dp</dimen>
+</resources>

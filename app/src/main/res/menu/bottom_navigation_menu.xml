@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/screen_map"
+        android:icon="@drawable/outline_map_24"
+        android:title="@string/map" />
+
+    <item
+        android:id="@+id/screen_markers"
+        android:icon="@drawable/outline_format_list_bulleted_24"
+        android:title="@string/points" />
+</menu>
